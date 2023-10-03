@@ -15,9 +15,11 @@ import hu.agnos.rollup.controller.service.SAPSQLGenerator;
 import hu.agnos.rollup.controller.service.SQLGenerator;
 import hu.agnos.rollup.controller.service.SQLServerSQLGenerator;
 import hu.agnos.rollup.db.util.DBService;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,14 +33,14 @@ public class RollupMaker {
 
     private final CubeSpecification CUBE_SPEC;
 
-    private final int OLAP_THRESHOLD_ALL_TABLE_ROW_COUNT = 100;
-    private final int OLAP_THRESHOLD_HIER_ROW_COUNT = 10;
+    private final int PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT;
+    private final int PARTITION_THRESHOLD_HIER_ROW_COUNT;
 
-    private final String ORACLE_DRIVER = "oracle.jdbc.driver.OracleDriver";
-    private final String H2_DRIVER = "org.h2.Driver";
-    private final String SQLSERVER_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private final String POSTGRES_DRIVER = "org.postgresql.Driver";
-    private final String SAP_DRIVER = "com.sap.db.jdbc.Driver";
+    private final String ORACLE_DRIVER;
+    private final String H2_DRIVER;
+    private final String SQLSERVER_DRIVER;
+    private final String POSTGRES_DRIVER;
+    private final String SAP_DRIVER;
 
     private SQLGenerator sqlGenerator;
     private List<String> partitionedHierchiesList;
@@ -47,56 +49,58 @@ public class RollupMaker {
         logger = LoggerFactory.getLogger(RollupMaker.class);
         this.CUBE_SPEC = cube;
         this.partitionedHierchiesList = new ArrayList<>();
-        switch (cube.getSourceDBDriver()) {
-            case ORACLE_DRIVER:
-                this.sqlGenerator = new OracleSQLGenerator();
-                break;
-            case H2_DRIVER:
-                this.sqlGenerator = new H2SQLGenerator();
-                break;
-            case SQLSERVER_DRIVER:
-                this.sqlGenerator = new SQLServerSQLGenerator();
-                break;
 
-            case POSTGRES_DRIVER:
-                this.sqlGenerator = new PostgreSQLGenerator();
-                break;
-            case SAP_DRIVER:
-                this.sqlGenerator = new SAPSQLGenerator();
-                break;
+        ResourceBundle rb = ResourceBundle.getBundle("dbsettings");
 
+        PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdAllTableRowCount"));
+        PARTITION_THRESHOLD_HIER_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdHierRowCount"));
+
+        ORACLE_DRIVER = rb.getString("oracleDriver");
+        H2_DRIVER = rb.getString("h2Driver");
+        SQLSERVER_DRIVER = rb.getString("sqlServerDriver");
+        POSTGRES_DRIVER = rb.getString("postgreSqlDriver");
+        SAP_DRIVER = rb.getString("sapDriver");
+
+        if (cube.getSourceDBDriver().equals(ORACLE_DRIVER)) {
+            this.sqlGenerator = new OracleSQLGenerator();
+        } else if (cube.getSourceDBDriver().equals(H2_DRIVER)) {
+            this.sqlGenerator = new H2SQLGenerator();
+        } else if (cube.getSourceDBDriver().equals(SQLSERVER_DRIVER)) {
+            this.sqlGenerator = new SQLServerSQLGenerator();
+        } else if (cube.getSourceDBDriver().equals(POSTGRES_DRIVER)) {
+            this.sqlGenerator = new PostgreSQLGenerator();
+        } else if (cube.getSourceDBDriver().equals(H2_DRIVER)) {
+            this.sqlGenerator = new SAPSQLGenerator();
         }
+
     }
 
-    private void makeAllHierarchiesRollupInDestinationTable(String destinationTableName, String sourceTableName) {
+    private void makeAllHierarchiesRollupInDestinationTable(String destinationTableName, String sourceTableName) throws SQLException, ClassNotFoundException {
         String dbUser = CUBE_SPEC.getSourceDBUser();
         String dbPassword = CUBE_SPEC.getSourceDBPassword();
         String dbUrl = CUBE_SPEC.getSourceDBURL();
         String dbDriver = CUBE_SPEC.getSourceDBDriver();
 
         for (String dimName : partitionedHierchiesList) {
-            System.out.println("######################################");
-            System.out.println(dimName);
-            System.out.println("######################################");
+
+            logger.info("## " + dimName + " processing...");
 
             String sql = this.sqlGenerator.getDropSQL("TMP_", destinationTableName);
-            logger.info(sql);
+            logger.debug(sql);
             DBService.slientExecuteQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
 
             sql = this.sqlGenerator.getCreateSQL("TMP_", CUBE_SPEC, destinationTableName);
-            logger.info(sql);
+            logger.debug(sql);
             DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
 
             List<LevelSpecification> levels = new ArrayList<>();
 
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-
             sql = this.sqlGenerator.getDropSQL("TMP_", destinationTableName);
-            logger.info(sql);
+            logger.debug(sql);
             DBService.slientExecuteQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
 
             sql = this.sqlGenerator.getCreateSQL("TMP_", CUBE_SPEC, destinationTableName);
-            logger.info(sql);
+            logger.debug(sql);
             DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
 
             makeOneHierRollupInTmpTable(dimName,
@@ -104,16 +108,16 @@ public class RollupMaker {
 
             sql = this.sqlGenerator.getSelectQueryToLoadOneHierarchyRollup("TMP_", CUBE_SPEC, destinationTableName, sourceTableName);
             DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
-            logger.info(sql);
+            logger.debug(sql);
 
             sql = this.sqlGenerator.getDropSQL("TMP_", destinationTableName);
             DBService.slientExecuteQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
-            logger.info(sql);
+            logger.debug(sql);
         }
 
     }
 
-    private void makeOneHierRollupInTmpTable(String dimName, HierarchySpecification hier, String destinationTableName) {
+    private void makeOneHierRollupInTmpTable(String dimName, HierarchySpecification hier, String destinationTableName) throws SQLException, ClassNotFoundException {
         List<String> hierColumnList = hier.getColumnListToOLAPBuilding();
         List<String> allDimensionColumnListMinusHierarchyColumnList = CUBE_SPEC.getDistinctHierarchyColumnList();
         allDimensionColumnListMinusHierarchyColumnList.removeAll(hierColumnList);
@@ -121,38 +125,38 @@ public class RollupMaker {
 
         if (hier != null) {
             for (int i = 0; i < hier.getOlapSqlIterationCnt(); i++) {
-                StringBuilder olapSQL = new StringBuilder("SELECT ");
+                StringBuilder offlineCalculetedSQL = new StringBuilder("SELECT ");
                 String selectStatement = hier.getOlapSelectStatementByIteration(i);
-                olapSQL.append(selectStatement).append(", ");
+                offlineCalculetedSQL.append(selectStatement).append(", ");
                 for (String otherDimensionColumnName : allDimensionColumnListMinusHierarchyColumnList) {
-                    olapSQL.append(otherDimensionColumnName).append(", ");
+                    offlineCalculetedSQL.append(otherDimensionColumnName).append(", ");
                 }
 
-                String toInsertStatement = olapSQL.substring(0, olapSQL.length() - 2);
+                String toInsertStatement = offlineCalculetedSQL.substring(0, offlineCalculetedSQL.length() - 2);
 
                 for (String measureColumnName : measureColumnList) {
                     String aggFunction = CUBE_SPEC.getAggregationFunctionByName(hier.getUniqueName(), measureColumnName);
-                    olapSQL.append(aggFunction).append("(").append(measureColumnName).append("), ");
+                    offlineCalculetedSQL.append(aggFunction).append("(").append(measureColumnName).append("), ");
                 }
-                olapSQL = new StringBuilder(olapSQL.substring(0, olapSQL.length() - 2));
-                olapSQL.append("\nFROM ").append(destinationTableName).append("\n");
-                olapSQL.append("GROUP BY ");
+                offlineCalculetedSQL = new StringBuilder(offlineCalculetedSQL.substring(0, offlineCalculetedSQL.length() - 2));
+                offlineCalculetedSQL.append(" FROM ").append(destinationTableName).append(" ");
+                offlineCalculetedSQL.append(" GROUP BY ");
 
                 String groupByStatement = hier.getOlapGroupByStatementByIteration(i);
-                olapSQL.append(groupByStatement);
+                offlineCalculetedSQL.append(groupByStatement);
 
                 if (groupByStatement != null && !groupByStatement.isEmpty()) {
-                    olapSQL.append(", ");
+                    offlineCalculetedSQL.append(", ");
                 }
 
                 for (String otherDimensionColumnName : allDimensionColumnListMinusHierarchyColumnList) {
-                    olapSQL.append(otherDimensionColumnName).append(", ");
+                    offlineCalculetedSQL.append(otherDimensionColumnName).append(", ");
                 }
 
-                olapSQL = new StringBuilder(olapSQL.substring(0, olapSQL.length() - 2));
+                offlineCalculetedSQL = new StringBuilder(offlineCalculetedSQL.substring(0, offlineCalculetedSQL.length() - 2));
 
-                String sql = getInsertStatementFromSeletcStatement(toInsertStatement, destinationTableName) + olapSQL.toString();
-                logger.info(sql);
+                String sql = getInsertStatementFromSeletcStatement(toInsertStatement, destinationTableName) + offlineCalculetedSQL.toString();
+                logger.debug(sql);
                 DBService.executeQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
             }
         }
@@ -179,8 +183,8 @@ public class RollupMaker {
 
     }
 
-    public void make(String destinationTableName, String sourceTableName) {
-        this.partitionedHierchiesList = CUBE_SPEC.getPartitionedHierarchyList();
+    public void make(String destinationTableName, String sourceTableName) throws SQLException, ClassNotFoundException {
+        this.partitionedHierchiesList = CUBE_SPEC.getisOfflineCalculatedHierarchyList();
         logger.info("Start");
 
         init(destinationTableName, sourceTableName);
@@ -189,20 +193,20 @@ public class RollupMaker {
 
     }
 
-    private void init(String destinationTableName, String sourceTableName) {
+    private void init(String destinationTableName, String sourceTableName) throws SQLException, ClassNotFoundException {
         String sql = this.sqlGenerator.getDropSQL(null, destinationTableName);
-        logger.info(sql);
+        logger.debug(sql);
         DBService.slientExecuteQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
 
         sql = this.sqlGenerator.getCreateSQL(null, CUBE_SPEC, destinationTableName);
-        logger.info(sql);
+        logger.debug(sql);
         DBService.executeQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
 
     }
 
-    private void loadBaseLevel(String destinationTableName, String sourceTableName) {
+    private void loadBaseLevel(String destinationTableName, String sourceTableName) throws SQLException, ClassNotFoundException {
         String sql = this.sqlGenerator.getSQLToBaseLevelDataLoading(null, CUBE_SPEC, destinationTableName, sourceTableName);
-        logger.info(sql);
+        logger.debug(sql);
         DBService.executeQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
     }
 }

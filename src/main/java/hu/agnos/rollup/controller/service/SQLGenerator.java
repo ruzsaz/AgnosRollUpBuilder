@@ -6,7 +6,6 @@
 package hu.agnos.rollup.controller.service;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
-//import hu.agnos.cube.specification.entity.XMLDimension;
 import hu.agnos.cube.specification.entity.HierarchySpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
 import java.util.ArrayList;
@@ -21,27 +20,25 @@ public abstract class SQLGenerator {
     public abstract String getDropSQL(String prefix, String destinationTableName);
 
     public abstract String getCreateSQL(String prefix, CubeSpecification cube, String destinationTableName);
-    
+
     public abstract String getLoadSQLSubSelectColumnList(CubeSpecification cube);
 
     public String getLoadSQLSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-//        for (XMLDimension dim : xmlCube.getDimensions()) {
-            for (HierarchySpecification hier : cube.getHierarchies()) {
-                for (LevelSpecification level : hier.getLevels()) {
+        for (HierarchySpecification hier : cube.getHierarchies()) {
+            for (LevelSpecification level : hier.getLevels()) {
 
-                    String columnName = level.getCodeColumnSourceName();
+                String columnName = level.getCodeColumnSourceName();
 
-                    if (!dimensionColumnList.contains(columnName)) {
-                        dimensionColumnList.add(columnName);
-                    }
-                    if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
-                        dimensionColumnList.add(level.getNameColumnName());
-                    }
+                if (!dimensionColumnList.contains(columnName)) {
+                    dimensionColumnList.add(columnName);
+                }
+                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                    dimensionColumnList.add(level.getNameColumnName());
                 }
             }
-//        }
+        }
 
         for (String column : dimensionColumnList) {
             result.append(column).append(", ");
@@ -57,20 +54,18 @@ public abstract class SQLGenerator {
     public String getLoadSQLGroupBYColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-//        for (XMLDimension dim : xmlCube.getDimensions()) {
-            for (HierarchySpecification hier : cube.getHierarchies()) {
-                for (LevelSpecification level : hier.getLevels()) {
+        for (HierarchySpecification hier : cube.getHierarchies()) {
+            for (LevelSpecification level : hier.getLevels()) {
 
-                    String columnName = level.getCodeColumnSourceName();
-                    if (!dimensionColumnList.contains(columnName)) {
-                        dimensionColumnList.add(columnName);
-                    }
-                    if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
-                        dimensionColumnList.add(level.getNameColumnName());
-                    }
+                String columnName = level.getCodeColumnSourceName();
+                if (!dimensionColumnList.contains(columnName)) {
+                    dimensionColumnList.add(columnName);
+                }
+                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                    dimensionColumnList.add(level.getNameColumnName());
                 }
             }
-//        }
+        }
 
         for (String column : dimensionColumnList) {
             result.append(column).append(", ");
@@ -82,7 +77,7 @@ public abstract class SQLGenerator {
         StringBuilder insertQuerySQLBuilder = new StringBuilder("INSERT INTO ");
         insertQuerySQLBuilder.append(destinationTableName).append(" (");
 
-        StringBuilder selectQuerySQLBuilder = new StringBuilder("SELECT ");
+        StringBuilder selectQuerySQLBuilder = new StringBuilder(" SELECT ");
 
         for (String column : cube.getDistinctHierarchyColumnList()) {
             selectQuerySQLBuilder.append(column).append(", ");
@@ -97,7 +92,7 @@ public abstract class SQLGenerator {
         }
         selectQuerySQLBuilder = new StringBuilder(selectQuerySQLBuilder.substring(0, selectQuerySQLBuilder.length() - 2));
         insertQuerySQLBuilder = new StringBuilder(insertQuerySQLBuilder.substring(0, insertQuerySQLBuilder.length() - 2));
-        insertQuerySQLBuilder.append(")\n");
+        insertQuerySQLBuilder.append(")");
         selectQuerySQLBuilder.append(" FROM ");
         selectQuerySQLBuilder.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
         insertQuerySQLBuilder.append(selectQuerySQLBuilder.toString());
@@ -150,18 +145,16 @@ public abstract class SQLGenerator {
     public String getLoadSQLInsertColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-//        for (XMLDimension dim : xmlCube.getDimensions()) {
-            for (HierarchySpecification hier : cube.getHierarchies()) {
-                for (LevelSpecification level : hier.getLevels()) {
-                    if (!dimensionColumnList.contains(level.getCodeColumnSourceName())) {
-                        dimensionColumnList.add(level.getCodeColumnSourceName());
-                    }
-                    if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
-                        dimensionColumnList.add(level.getNameColumnName());
-                    }
+        for (HierarchySpecification hier : cube.getHierarchies()) {
+            for (LevelSpecification level : hier.getLevels()) {
+                if (!dimensionColumnList.contains(level.getCodeColumnSourceName())) {
+                    dimensionColumnList.add(level.getCodeColumnSourceName());
+                }
+                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                    dimensionColumnList.add(level.getNameColumnName());
                 }
             }
-//        }
+        }
 
         for (String column : dimensionColumnList) {
             result.append(column).append(", ");
@@ -174,27 +167,24 @@ public abstract class SQLGenerator {
         return result.substring(0, result.length() - 2);
     }
 
-    
-     public String getSQLToBaseLevelDataLoading(String prefix, CubeSpecification cube, String destinationTableName, String sourceTableName) {
+    public String getSQLToBaseLevelDataLoading(String prefix, CubeSpecification cube, String destinationTableName, String sourceTableName) {
         StringBuilder result = new StringBuilder("INSERT INTO ");
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
         result.append(" ( ");
         result.append(getLoadSQLInsertColumnList(cube));
-        result.append(" )\nSELECT ").append(getLoadSQLSelectColumnList(cube));
-        result.append("\nFROM ");
-        result.append("\n\t(\n").append(getLoadSQLSubSelect(prefix, cube, sourceTableName)).append("\n\t) as foo\n");
-        result.append("\nGROUP BY ").append(getLoadSQLGroupBYColumnList(cube));
-//        System.out.println("result:\n" + result.toString(););
+        result.append(" ) SELECT ").append(getLoadSQLSelectColumnList(cube));
+        result.append(" FROM ");
+        result.append("( ").append(getLoadSQLSubSelect(prefix, cube, sourceTableName)).append(") as foo");
+        result.append(" GROUP BY ").append(getLoadSQLGroupBYColumnList(cube));
         return result.toString();
     }
 
     public String getLoadSQLSubSelect(String prefix, CubeSpecification cube, String sourceTableName) {
-        StringBuilder result = new StringBuilder("\t\tSELECT ");
+        StringBuilder result = new StringBuilder("SELECT ");
         result.append(getLoadSQLSubSelectColumnList(cube));
 
-        result.append("\n\t\tFROM ");
+        result.append(" FROM ");
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, sourceTableName));
-//        System.out.println("result:\n" + result.toString(););
         return result.toString();
     }
 

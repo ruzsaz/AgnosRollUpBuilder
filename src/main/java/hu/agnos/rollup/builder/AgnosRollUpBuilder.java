@@ -12,6 +12,8 @@ import hu.agnos.cube.specification.exception.NameOfHierarchySpecificationNotUniq
 import hu.agnos.cube.specification.exception.NameOfMeasureSpecificationNotUniqueException;
 import hu.agnos.cube.specification.repo.CubeSpecificationRepo;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,21 +61,26 @@ public class AgnosRollUpBuilder {
                 CubeSpecification cube = getCubeSpecification(xmlPath);
 //                System.out.println("ez van az xmlben: " + xmlCube.getSourceDBURL());
                 if (cube != null) {
-                    build(cube, inputTable, outputTable);
+                    try {
+                        build(cube, inputTable, outputTable);
+                    } catch (SQLException | ClassNotFoundException ex) {
+                        logger.error(ex.getMessage());
+                        result = 1;
+                    }
                 } else {
                     result = 1;
                 }
             }
             if (result == 0) {
-                logger.info("Make rollup from %s was successful." + xmlPath);
+                logger.info("Make rollup from "+ xmlPath + " file was successful." );
             } else {
-                logger.info("Make rollup from %s was unsuccessful." + xmlPath);
+                logger.info("Make rollup from " + xmlPath + " file was unsuccessful.");
             }
             System.exit(result);
         }
     }
 
-    private static void build(CubeSpecification rollup, String sourceTableName, String destinationTableName) {
+    private static void build(CubeSpecification rollup, String sourceTableName, String destinationTableName) throws SQLException, ClassNotFoundException {
         RollupMaker rolapMaker = new RollupMaker(rollup);
         rolapMaker.make(destinationTableName, sourceTableName);
 

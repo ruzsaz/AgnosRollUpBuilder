@@ -20,7 +20,7 @@ public class DBService {
         return c;
     }
 
-    public static boolean executeQuery(String sql, String user, String password, String url, String driver) {
+    public static boolean executeQuery(String sql, String user, String password, String url, String driver) throws SQLException, ClassNotFoundException {
         boolean result = true;
         Connection connection = null;
         Statement stmt = null;
@@ -29,12 +29,9 @@ public class DBService {
             connection = DriverManager.getConnection(url, user, password);
             connection.setAutoCommit(false);
             stmt = connection.createStatement();
-            //  System.out.println("ez köhög: " +sql);
             stmt.execute(sql);
             connection.commit();
-        } catch (ClassNotFoundException | SQLException ex) {
-            result = false;
-            logger.error(ex.getMessage());
+   
         } finally {
             if (stmt != null) {
                 try {

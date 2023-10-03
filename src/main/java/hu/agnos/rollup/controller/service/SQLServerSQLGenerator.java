@@ -42,7 +42,6 @@ public class SQLServerSQLGenerator extends SQLGenerator {
     public String getLoadSQLSubSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-//        for (XMLDimension dim : xmlCube.getDimensions()) {
             for (HierarchySpecification hier : cube.getHierarchies()) {
                 for (LevelSpecification level : hier.getLevels()) {
 
@@ -57,7 +56,6 @@ public class SQLServerSQLGenerator extends SQLGenerator {
                     }
                 }
             }
-//        }
         for (String column : dimensionColumnList) {
             result.append(" coalesce(trim(convert(char,").append(column).append(")), 'N/A') ").append(column).append(", ");
         }

@@ -79,7 +79,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifest>
-                                    <mainClass>hu.mi.agnos.rollup.builder.AgnosRollUpBuilder</mainClass>
+                                    <mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>
@@ -96,7 +96,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>hu.mi.agnos.rollup.builder.AgnosRollUpBuilder</mainClass>
+                            <mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -6,7 +6,6 @@
 package hu.agnos.rollup.controller.service;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
-//import hu.agnos.cube.specification.entity.XMLDimension;
 import hu.agnos.cube.specification.entity.HierarchySpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
 import java.util.ArrayList;
@@ -44,22 +43,20 @@ public class OracleSQLGenerator extends SQLGenerator {
     public String getLoadSQLSubSelectColumnList(CubeSpecification cubeSpec) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-//        for (XMLDimension dim : xmlCube.getDimensions()) {
-            for (HierarchySpecification hier : cubeSpec.getHierarchies()) {
-                for (LevelSpecification level : hier.getLevels()) {
+        for (HierarchySpecification hier : cubeSpec.getHierarchies()) {
+            for (LevelSpecification level : hier.getLevels()) {
 
-                    String columnName = level.getCodeColumnSourceName();
+                String columnName = level.getCodeColumnSourceName();
 
-                    if (!dimensionColumnList.contains(columnName)) {
-                        dimensionColumnList.add(columnName);
-                    }
-                    if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
-                        dimensionColumnList.add(1, level.getNameColumnName());
+                if (!dimensionColumnList.contains(columnName)) {
+                    dimensionColumnList.add(columnName);
+                }
+                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                    dimensionColumnList.add(1, level.getNameColumnName());
 
-                    }
                 }
             }
-//        }
+        }
 
         for (String column : dimensionColumnList) {
             result.append(" nvl(to_char(").append(column).append("), 'N/A') ").append(column).append(", ");
