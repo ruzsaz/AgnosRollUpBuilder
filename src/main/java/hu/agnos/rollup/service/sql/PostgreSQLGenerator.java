@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hu.agnos.rollup.controller.service;
+package hu.agnos.rollup.service.sql;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.HierarchySpecification;
@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author parisek
  */
-public class SAPSQLGenerator extends SQLGenerator {
+public class PostgreSQLGenerator extends SQLGenerator {
 
     @Override
     public String getDropSQL(String prefix, String destinationTableName) {
@@ -28,9 +28,9 @@ public class SAPSQLGenerator extends SQLGenerator {
     public String getCreateSQL(String prefix, CubeSpecification cube, String destinationTableName) {
         StringBuilder result = new StringBuilder("CREATE TABLE ");
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
-        result.append("( ");
+        result.append(" ( ");
         for (String s : cube.getDistinctHierarchyColumnList()) {
-            result.append(s).append(" NVARCHAR(500), ");
+            result.append(s).append(" VARCHAR(500), ");
         }
         for (String s : cube.getDistinctMeasureColumnList()) {
             result.append(s).append(" REAL, ");
@@ -58,12 +58,14 @@ public class SAPSQLGenerator extends SQLGenerator {
         }
 
         for (String column : dimensionColumnList) {
-            result.append(" nvl(to_char(").append(column).append("), 'N/A') ").append(column).append(", ");
+            result.append(" coalesce(").append(column).append(", 'N/A') ").append(column).append(", ");
         }
+
         for (String column : cube.getDistinctMeasureColumnList()) {
-            result.append(" nvl(").append(column).append(",0) ").append(column).append(", ");
+            result.append(" coalesce(").append(column).append(",0) ").append(column).append(", ");
         }
 
         return result.substring(0, result.length() - 2);
     }
+
 }

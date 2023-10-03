@@ -6,7 +6,7 @@
 package hu.agnos.rollup.builder;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
-import hu.agnos.rollup.controller.RollupMaker;
+import hu.agnos.rollup.service.RollupMaker;
 import hu.agnos.cube.specification.exception.InvalidPostfixExpressionException;
 import hu.agnos.cube.specification.exception.NameOfHierarchySpecificationNotUniqueException;
 import hu.agnos.cube.specification.exception.NameOfMeasureSpecificationNotUniqueException;

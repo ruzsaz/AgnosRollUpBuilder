@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hu.agnos.rollup.controller.service;
+package hu.agnos.rollup.service.sql;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.HierarchySpecification;

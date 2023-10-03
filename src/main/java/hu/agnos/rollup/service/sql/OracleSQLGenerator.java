@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hu.agnos.rollup.controller.service;
+package hu.agnos.rollup.service.sql;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.HierarchySpecification;
@@ -15,12 +15,13 @@ import java.util.List;
  *
  * @author parisek
  */
-public class H2SQLGenerator extends SQLGenerator {
+public class OracleSQLGenerator extends SQLGenerator {
 
     @Override
     public String getDropSQL(String prefix, String destinationTableName) {
         StringBuilder result = new StringBuilder("DROP TABLE ");
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
+        result.append(" CASCADE CONSTRAINTS PURGE");
         return result.toString();
     }
 
@@ -30,10 +31,10 @@ public class H2SQLGenerator extends SQLGenerator {
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
         result.append("( ");
         for (String s : cubeSpec.getDistinctHierarchyColumnList()) {
-            result.append(s).append(" VARCHAR(500), ");
+            result.append(s).append(" VARCHAR2(1000 BYTE), ");
         }
         for (String s : cubeSpec.getDistinctMeasureColumnList()) {
-            result.append(s).append(" DOUBLE, ");
+            result.append(s).append(" NUMBER, ");
         }
         return result.substring(0, result.length() - 2) + ")";
     }
@@ -60,7 +61,6 @@ public class H2SQLGenerator extends SQLGenerator {
         for (String column : dimensionColumnList) {
             result.append(" nvl(to_char(").append(column).append("), 'N/A') ").append(column).append(", ");
         }
-
         for (String column : cubeSpec.getDistinctMeasureColumnList()) {
             result.append(" nvl(").append(column).append(",0) ").append(column).append(", ");
         }

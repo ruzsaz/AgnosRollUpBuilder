@@ -3,18 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hu.agnos.rollup.controller;
+package hu.agnos.rollup.service;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.HierarchySpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
-import hu.agnos.rollup.controller.service.H2SQLGenerator;
-import hu.agnos.rollup.controller.service.OracleSQLGenerator;
-import hu.agnos.rollup.controller.service.PostgreSQLGenerator;
-import hu.agnos.rollup.controller.service.SAPSQLGenerator;
-import hu.agnos.rollup.controller.service.SQLGenerator;
-import hu.agnos.rollup.controller.service.SQLServerSQLGenerator;
-import hu.agnos.rollup.db.util.DBService;
+import hu.agnos.rollup.service.sql.H2SQLGenerator;
+import hu.agnos.rollup.service.sql.OracleSQLGenerator;
+import hu.agnos.rollup.service.sql.PostgreSQLGenerator;
+import hu.agnos.rollup.service.sql.SAPSQLGenerator;
+import hu.agnos.rollup.service.sql.SQLGenerator;
+import hu.agnos.rollup.service.sql.SQLServerSQLGenerator;
+import hu.agnos.rollup.util.DBService;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package hu.agnos.rollup.db.util;
+package hu.agnos.rollup.util;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
