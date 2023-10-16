@@ -5,11 +5,12 @@
  */
 package hu.agnos.rollup.service.sql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.HierarchySpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
