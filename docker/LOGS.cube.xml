@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Cube cubeUniqueName="AGNOS_ACCESS_LOGS" isValid="false">
+  <SourceDBDriver>org.postgresql.Driver</SourceDBDriver>
+  <SourceDBURL>jdbc:postgresql://host.docker.internal:15432/postgres</SourceDBURL>
+  <SourceDBUser>postgres</SourceDBUser>
+  <SourceDBPassword>postgres123</SourceDBPassword>
+  <Measures>
+    <Measure uniqueName="number"/>
+  </Measures>
+  <Hierarchies>
+    <Hierarchy uniqueName="TIME_HIER" order="0" isOfflineCalculated="true">
+      <Levels>
+        <Level uniqueName="YEAR" depth="1" codeColumnName="YEAR" codeColumnSourceName="YEAR" nameColumnName="YEAR"/>
+        <Level uniqueName="MONTH" depth="2" codeColumnName="month" codeColumnSourceName="month" nameColumnName="month"/>
+        <Level uniqueName="DAY" depth="3" codeColumnName="day" codeColumnSourceName="day" nameColumnName="day"/>
+      </Levels>
+    </Hierarchy>
+    <Hierarchy uniqueName="REPORT_HIER" order="1" isOfflineCalculated="false">
+      <Levels>
+        <Level uniqueName="REPORT" depth="1" codeColumnName="report" codeColumnSourceName="report" nameColumnName="report"/>
+      </Levels>
+    </Hierarchy>
+    <Hierarchy uniqueName="ACTION_HIER" order="2" isOfflineCalculated="false">
+      <Levels>
+        <Level uniqueName="ACTION_TYPE" depth="1" codeColumnName="action_type" codeColumnSourceName="action_type" nameColumnName="action_type"/>
+      </Levels>
+    </Hierarchy>
+    <Hierarchy uniqueName="USER_HIER" order="3" isOfflineCalculated="false">
+      <Levels>
+        <Level uniqueName="USER" depth="1" codeColumnName="USER_NAME" codeColumnSourceName="USER_NAME" nameColumnName="USER_NAME"/>
+      </Levels>
+    </Hierarchy>
+  </Hierarchies>
+  <Aggregations/>
+</Cube>
