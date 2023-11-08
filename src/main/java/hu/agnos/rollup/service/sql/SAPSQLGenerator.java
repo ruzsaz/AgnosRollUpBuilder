@@ -5,11 +5,12 @@
  */
 package hu.agnos.rollup.service.sql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -42,8 +43,8 @@ public class SAPSQLGenerator extends SQLGenerator {
     public String getLoadSQLSubSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (DimensionSpecification hier : cube.getHierarchies()) {
-            for (LevelSpecification level : hier.getLevels()) {
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
 

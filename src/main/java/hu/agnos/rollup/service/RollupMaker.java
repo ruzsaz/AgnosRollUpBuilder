@@ -5,6 +5,11 @@
  */
 package hu.agnos.rollup.service;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
@@ -15,11 +20,6 @@ import hu.agnos.rollup.service.sql.SAPSQLGenerator;
 import hu.agnos.rollup.service.sql.SQLGenerator;
 import hu.agnos.rollup.service.sql.SQLServerSQLGenerator;
 import hu.agnos.rollup.util.DBService;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

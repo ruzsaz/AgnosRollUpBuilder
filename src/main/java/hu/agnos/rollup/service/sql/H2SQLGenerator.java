@@ -5,11 +5,12 @@
  */
 package hu.agnos.rollup.service.sql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -42,8 +43,8 @@ public class H2SQLGenerator extends SQLGenerator {
     public String getLoadSQLSubSelectColumnList(CubeSpecification cubeSpec) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (DimensionSpecification hier : cubeSpec.getHierarchies()) {
-            for (LevelSpecification level : hier.getLevels()) {
+        for (DimensionSpecification dim : cubeSpec.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
 

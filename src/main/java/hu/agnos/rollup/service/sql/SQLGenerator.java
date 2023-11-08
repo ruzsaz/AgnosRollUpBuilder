@@ -5,11 +5,12 @@
  */
 package hu.agnos.rollup.service.sql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -26,8 +27,8 @@ public abstract class SQLGenerator {
     public String getLoadSQLSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (DimensionSpecification hier : cube.getHierarchies()) {
-            for (LevelSpecification level : hier.getLevels()) {
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
 
@@ -54,8 +55,8 @@ public abstract class SQLGenerator {
     public String getLoadSQLGroupBYColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (DimensionSpecification hier : cube.getHierarchies()) {
-            for (LevelSpecification level : hier.getLevels()) {
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
                 if (!dimensionColumnList.contains(columnName)) {
@@ -145,8 +146,8 @@ public abstract class SQLGenerator {
     public String getLoadSQLInsertColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (DimensionSpecification hier : cube.getHierarchies()) {
-            for (LevelSpecification level : hier.getLevels()) {
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
                 if (!dimensionColumnList.contains(level.getCodeColumnSourceName())) {
                     dimensionColumnList.add(level.getCodeColumnSourceName());
                 }

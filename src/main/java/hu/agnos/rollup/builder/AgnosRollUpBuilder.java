@@ -5,15 +5,15 @@
  */
 package hu.agnos.rollup.builder;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
-import hu.agnos.rollup.service.RollupMaker;
 import hu.agnos.cube.specification.exception.InvalidPostfixExpressionException;
 import hu.agnos.cube.specification.exception.NameOfHierarchySpecificationNotUniqueException;
 import hu.agnos.cube.specification.exception.NameOfMeasureSpecificationNotUniqueException;
 import hu.agnos.cube.specification.repo.CubeSpecificationRepo;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.logging.Level;
+import hu.agnos.rollup.service.RollupMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +30,6 @@ public class AgnosRollUpBuilder {
     private static String outputTable = null;
 
     private static final Logger logger = LoggerFactory.getLogger(AgnosRollUpBuilder.class);
-
-    ;
 
     /**
      * @param args the command line arguments

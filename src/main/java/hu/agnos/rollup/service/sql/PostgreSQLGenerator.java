@@ -5,11 +5,12 @@
  */
 package hu.agnos.rollup.service.sql;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -42,8 +43,8 @@ public class PostgreSQLGenerator extends SQLGenerator {
     public String getLoadSQLSubSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (DimensionSpecification hier : cube.getHierarchies()) {
-            for (LevelSpecification level : hier.getLevels()) {
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
 
@@ -58,11 +59,11 @@ public class PostgreSQLGenerator extends SQLGenerator {
         }
 
         for (String column : dimensionColumnList) {
-            result.append(" coalesce(").append(column).append(", 'N/A') ").append(column).append(", ");
+            result.append(" coalesce(").append(column).append(", 'N/A') AS ").append(column).append(", ");
         }
 
         for (String column : cube.getDistinctMeasureColumnList()) {
-            result.append(" coalesce(").append(column).append(",0) ").append(column).append(", ");
+            result.append(" coalesce(").append(column).append(",0) AS ").append(column).append(", ");
         }
 
         return result.substring(0, result.length() - 2);
