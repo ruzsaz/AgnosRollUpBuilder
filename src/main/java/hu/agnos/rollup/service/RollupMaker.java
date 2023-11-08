@@ -6,7 +6,7 @@
 package hu.agnos.rollup.service;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
-import hu.agnos.cube.specification.entity.HierarchySpecification;
+import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
 import hu.agnos.rollup.service.sql.H2SQLGenerator;
 import hu.agnos.rollup.service.sql.OracleSQLGenerator;
@@ -104,7 +104,7 @@ public class RollupMaker {
             DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
 
             makeOneHierRollupInTmpTable(dimName,
-                    CUBE_SPEC.getHierarchyByName(dimName), destinationTableName);
+                    CUBE_SPEC.getDimensionByName(dimName), destinationTableName);
 
             sql = this.sqlGenerator.getSelectQueryToLoadOneHierarchyRollup("TMP_", CUBE_SPEC, destinationTableName, sourceTableName);
             DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
@@ -117,9 +117,9 @@ public class RollupMaker {
 
     }
 
-    private void makeOneHierRollupInTmpTable(String dimName, HierarchySpecification hier, String destinationTableName) throws SQLException, ClassNotFoundException {
+    private void makeOneHierRollupInTmpTable(String dimName, DimensionSpecification hier, String destinationTableName) throws SQLException, ClassNotFoundException {
         List<String> hierColumnList = hier.getColumnListToOLAPBuilding();
-        List<String> allDimensionColumnListMinusHierarchyColumnList = CUBE_SPEC.getDistinctHierarchyColumnList();
+        List<String> allDimensionColumnListMinusHierarchyColumnList = CUBE_SPEC.getDistinctDimensionColumnList();
         allDimensionColumnListMinusHierarchyColumnList.removeAll(hierColumnList);
         List<String> measureColumnList = CUBE_SPEC.getDistinctMeasureColumnList();
 
@@ -184,7 +184,7 @@ public class RollupMaker {
     }
 
     public void make(String destinationTableName, String sourceTableName) throws SQLException, ClassNotFoundException {
-        this.partitionedHierchiesList = CUBE_SPEC.getisOfflineCalculatedHierarchyList();
+        this.partitionedHierchiesList = CUBE_SPEC.getIsOfflineCalculatedDimensonList();
         logger.info("Start");
 
         init(destinationTableName, sourceTableName);

@@ -6,7 +6,7 @@
 package hu.agnos.rollup.service.sql;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
-import hu.agnos.cube.specification.entity.HierarchySpecification;
+import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public abstract class SQLGenerator {
     public String getLoadSQLSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (HierarchySpecification hier : cube.getHierarchies()) {
+        for (DimensionSpecification hier : cube.getHierarchies()) {
             for (LevelSpecification level : hier.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
@@ -54,7 +54,7 @@ public abstract class SQLGenerator {
     public String getLoadSQLGroupBYColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (HierarchySpecification hier : cube.getHierarchies()) {
+        for (DimensionSpecification hier : cube.getHierarchies()) {
             for (LevelSpecification level : hier.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
@@ -79,7 +79,7 @@ public abstract class SQLGenerator {
 
         StringBuilder selectQuerySQLBuilder = new StringBuilder(" SELECT ");
 
-        for (String column : cube.getDistinctHierarchyColumnList()) {
+        for (String column : cube.getDistinctDimensionColumnList()) {
             selectQuerySQLBuilder.append(column).append(", ");
             insertQuerySQLBuilder.append(column).append(", ");
 
@@ -145,7 +145,7 @@ public abstract class SQLGenerator {
     public String getLoadSQLInsertColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (HierarchySpecification hier : cube.getHierarchies()) {
+        for (DimensionSpecification hier : cube.getHierarchies()) {
             for (LevelSpecification level : hier.getLevels()) {
                 if (!dimensionColumnList.contains(level.getCodeColumnSourceName())) {
                     dimensionColumnList.add(level.getCodeColumnSourceName());

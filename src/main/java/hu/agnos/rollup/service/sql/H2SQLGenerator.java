@@ -6,7 +6,7 @@
 package hu.agnos.rollup.service.sql;
 
 import hu.agnos.cube.specification.entity.CubeSpecification;
-import hu.agnos.cube.specification.entity.HierarchySpecification;
+import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class H2SQLGenerator extends SQLGenerator {
         StringBuilder result = new StringBuilder("CREATE TABLE ");
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
         result.append("( ");
-        for (String s : cubeSpec.getDistinctHierarchyColumnList()) {
+        for (String s : cubeSpec.getDistinctDimensionColumnList()) {
             result.append(s).append(" VARCHAR(500), ");
         }
         for (String s : cubeSpec.getDistinctMeasureColumnList()) {
@@ -42,7 +42,7 @@ public class H2SQLGenerator extends SQLGenerator {
     public String getLoadSQLSubSelectColumnList(CubeSpecification cubeSpec) {
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder result = new StringBuilder();
-        for (HierarchySpecification hier : cubeSpec.getHierarchies()) {
+        for (DimensionSpecification hier : cubeSpec.getHierarchies()) {
             for (LevelSpecification level : hier.getLevels()) {
 
                 String columnName = level.getCodeColumnSourceName();
