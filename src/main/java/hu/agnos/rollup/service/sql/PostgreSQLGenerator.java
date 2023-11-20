@@ -11,6 +11,8 @@ import java.util.List;
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
+import hu.agnos.cube.specification.entity.MeasureSpecification;
+import java.util.Optional;
 
 /**
  *
@@ -42,16 +44,16 @@ public class PostgreSQLGenerator extends SQLGenerator {
     @Override
     public String getLoadSQLSubSelectColumnList(CubeSpecification cube) {
         List<String> dimensionColumnList = new ArrayList<>();
-        StringBuilder result = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
         for (DimensionSpecification dim : cube.getDimensions()) {
             for (LevelSpecification level : dim.getLevels()) {
 
-                String columnName = level.getCodeColumnSourceName();
+                String columnName = level.getCodeColumnName();
 
                 if (!dimensionColumnList.contains(columnName)) {
                     dimensionColumnList.add(columnName);
                 }
-                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
                     dimensionColumnList.add(1, level.getNameColumnName());
 
                 }
@@ -59,14 +61,26 @@ public class PostgreSQLGenerator extends SQLGenerator {
         }
 
         for (String column : dimensionColumnList) {
-            result.append(" coalesce(").append(column).append(", 'N/A') AS ").append(column).append(", ");
+            stringBuilder.append(" coalesce(").append(column).append(", 'N/A') AS ").append(column).append(", ");
         }
 
         for (String column : cube.getDistinctMeasureColumnList()) {
-            result.append(" coalesce(").append(column).append(",0) AS ").append(column).append(", ");
+            stringBuilder.append(" coalesce(").append(column).append(",0) AS ").append(column).append(", ");
         }
-
-        return result.substring(0, result.length() - 2);
+String result = stringBuilder.substring(0, stringBuilder.length() - 2);
+        
+        Optional<MeasureSpecification> m = cube.getVirtualMeasuer();
+        
+        if (! m.isEmpty()) {
+            String virtualDimensionName = m.get().getDimensionName();
+            String stringToBeReplaced =  " coalesce(trim(convert(char," + cube
+                    .getDimensionByName(virtualDimensionName)
+                    .getLevels()
+                    .get(1)
+                    .getCodeColumnName();
+            result = result.replace(stringToBeReplaced," coalesce(trim(convert(char,sub_bar.DenseRank");
+        }
+        return result;
     }
 
 }

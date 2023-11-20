@@ -33,8 +33,8 @@ public class RollupMaker {
 
     private final CubeSpecification CUBE_SPEC;
 
-    private final int PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT;
-    private final int PARTITION_THRESHOLD_HIER_ROW_COUNT;
+//    private final int PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT;
+//    private final int PARTITION_THRESHOLD_HIER_ROW_COUNT;
 
     private final String ORACLE_DRIVER;
     private final String H2_DRIVER;
@@ -43,23 +43,25 @@ public class RollupMaker {
     private final String SAP_DRIVER;
 
     private SQLGenerator sqlGenerator;
-    private List<String> partitionedHierchiesList;
+    private List<String> offlineCalculatedDimensionList;
 
     public RollupMaker(CubeSpecification cube) {
         logger = LoggerFactory.getLogger(RollupMaker.class);
         this.CUBE_SPEC = cube;
-        this.partitionedHierchiesList = new ArrayList<>();
+        this.offlineCalculatedDimensionList = new ArrayList<>();
 
         ResourceBundle rb = ResourceBundle.getBundle("dbsettings");
 
-        PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdAllTableRowCount"));
-        PARTITION_THRESHOLD_HIER_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdHierRowCount"));
+////        PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdAllTableRowCount"));
+////        PARTITION_THRESHOLD_HIER_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdHierRowCount"));
 
         ORACLE_DRIVER = rb.getString("oracleDriver");
         H2_DRIVER = rb.getString("h2Driver");
         SQLSERVER_DRIVER = rb.getString("sqlServerDriver");
         POSTGRES_DRIVER = rb.getString("postgreSqlDriver");
         SAP_DRIVER = rb.getString("sapDriver");
+        
+        System.out.println("cube: " + cube.toString());
 
         if (cube.getSourceDBDriver().equals(ORACLE_DRIVER)) {
             this.sqlGenerator = new OracleSQLGenerator();
@@ -81,7 +83,7 @@ public class RollupMaker {
         String dbUrl = CUBE_SPEC.getSourceDBURL();
         String dbDriver = CUBE_SPEC.getSourceDBDriver();
 
-        for (String dimName : partitionedHierchiesList) {
+        for (String dimName : offlineCalculatedDimensionList) {
 
             logger.info("## " + dimName + " processing...");
 
@@ -184,7 +186,7 @@ public class RollupMaker {
     }
 
     public void make(String destinationTableName, String sourceTableName) throws SQLException, ClassNotFoundException {
-        this.partitionedHierchiesList = CUBE_SPEC.getIsOfflineCalculatedDimensonList();
+        this.offlineCalculatedDimensionList = CUBE_SPEC.getOfflineCalculatedDimensonNameList();
         logger.info("Start");
 
         init(destinationTableName, sourceTableName);

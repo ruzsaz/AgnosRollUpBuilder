@@ -12,7 +12,7 @@
             <properties>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/CRC_KM.cube.xml --i=crc_km_fact --o=crc_km_roll</exec.appArgs>
+                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/CRC_NEW_2.cube.xml --i=test_crc_new --o=test_crc_new_2_roll</exec.appArgs>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</exec.mainClass>
             </properties>
@@ -30,7 +30,7 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
-                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/CRC_KM.cube.xml --i=crc_km_fact --o=crc_km_roll</exec.appArgs>
+                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/CRC_NEW_2.cube.xml --i=test_crc_new --o=test_crc_new_2_roll</exec.appArgs>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</exec.mainClass>
             </properties>
@@ -47,7 +47,7 @@
             <properties>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/CRC_KM.cube.xml --i=crc_km_fact --o=crc_km_roll</exec.appArgs>
+                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/CRC_NEW_2.cube.xml --i=test_crc_new --o=test_crc_new_2_roll</exec.appArgs>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</exec.mainClass>
             </properties>

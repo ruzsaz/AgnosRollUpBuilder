@@ -11,6 +11,8 @@ import java.util.List;
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
+import hu.agnos.cube.specification.entity.MeasureSpecification;
+import java.util.Optional;
 
 /**
  *
@@ -30,12 +32,12 @@ public abstract class SQLGenerator {
         for (DimensionSpecification dim : cube.getDimensions()) {
             for (LevelSpecification level : dim.getLevels()) {
 
-                String columnName = level.getCodeColumnSourceName();
+                String columnName = level.getCodeColumnName();
 
                 if (!dimensionColumnList.contains(columnName)) {
                     dimensionColumnList.add(columnName);
                 }
-                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
                     dimensionColumnList.add(level.getNameColumnName());
                 }
             }
@@ -58,11 +60,11 @@ public abstract class SQLGenerator {
         for (DimensionSpecification dim : cube.getDimensions()) {
             for (LevelSpecification level : dim.getLevels()) {
 
-                String columnName = level.getCodeColumnSourceName();
+                String columnName = level.getCodeColumnName();
                 if (!dimensionColumnList.contains(columnName)) {
                     dimensionColumnList.add(columnName);
                 }
-                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
                     dimensionColumnList.add(level.getNameColumnName());
                 }
             }
@@ -148,10 +150,10 @@ public abstract class SQLGenerator {
         StringBuilder result = new StringBuilder();
         for (DimensionSpecification dim : cube.getDimensions()) {
             for (LevelSpecification level : dim.getLevels()) {
-                if (!dimensionColumnList.contains(level.getCodeColumnSourceName())) {
-                    dimensionColumnList.add(level.getCodeColumnSourceName());
+                if (!dimensionColumnList.contains(level.getCodeColumnName())) {
+                    dimensionColumnList.add(level.getCodeColumnName());
                 }
-                if (!level.getNameColumnName().equals(level.getCodeColumnSourceName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
                     dimensionColumnList.add(level.getNameColumnName());
                 }
             }
@@ -185,7 +187,31 @@ public abstract class SQLGenerator {
         result.append(getLoadSQLSubSelectColumnList(cube));
 
         result.append(" FROM ");
-        result.append(getFullyQualifiedTableNameWithPrefix(prefix, sourceTableName));
+        
+        String fullyQualifiedTableName = getFullyQualifiedTableNameWithPrefix(prefix, sourceTableName) ;
+        result.append(fullyQualifiedTableName);
+            
+        Optional<MeasureSpecification> m = cube.getVirtualMeasuer();
+
+        if (m.isPresent()) {
+            String virtualDimensionName = m.get().getDimensionName();
+            String columName =  cube.getDimensionByName(virtualDimensionName)
+                    .getLevels()
+                    .get(0)
+                    .getCodeColumnName();
+            
+            result.append(" as sub_foo,");
+            result.append("(select DISTINCT ");          
+            result.append(columName);
+            result.append(", DENSE_RANK() OVER (order by ");
+            result.append(columName);
+            result.append(" )AS DenseRank FROM ");
+            result.append(fullyQualifiedTableName);
+            result.append(") as sub_bar where sub_bar.");
+            result.append(columName);
+            result.append("=sub_foo.");
+            result.append(columName);
+        } 
         return result.toString();
     }
 
