@@ -35,51 +35,82 @@ public class SQLServerSQLGenerator extends SQLGenerator {
         for (String s : cube.getDistinctDimensionColumnList()) {
             result.append(s).append(" VARCHAR(500), ");
         }
-        for (String s : cube.getDistinctMeasureColumnList()) {
-            result.append(s).append(" FLOAT, ");
+
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            result
+                    .append(m.get().getUniqueName())
+                    .append(" INT, ");
+        } else {
+
+            for (String s : cube.getDistinctClassicalMeasureNameList()) {
+                result.append(s).append(" FLOAT, ");
+            }
         }
         return result.substring(0, result.length() - 2) + ")";
     }
 
     @Override
-    public String getLoadSQLSubSelectColumnList(CubeSpecification cube) {     
-        
+    public String getLoadSQLSubSelectColumnList(CubeSpecification cube) {
+
         List<String> dimensionColumnList = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-            for (DimensionSpecification dim : cube.getDimensions()) {
-                for (LevelSpecification level : dim.getLevels()) {
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
 
-                    String columnName = level.getCodeColumnName();
+                String columnName = level.getCodeColumnName();
 
-                    if (!dimensionColumnList.contains(columnName)) {
-                        dimensionColumnList.add(columnName);
-                    }
-                    if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
-                        dimensionColumnList.add(1, level.getNameColumnName());
+                if (!dimensionColumnList.contains(columnName)) {
+                    dimensionColumnList.add(columnName);
+                }
+                if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                    dimensionColumnList.add(1, level.getNameColumnName());
 
-                    }
                 }
             }
+        }
         for (String column : dimensionColumnList) {
             stringBuilder.append(" coalesce(trim(convert(char,").append(column).append(")), 'N/A') ").append(column).append(", ");
         }
-        for (String column : cube.getDistinctMeasureColumnList()) {
-            stringBuilder.append(" coalesce(").append(column).append(",0) ").append(column).append(", ");
+
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            stringBuilder
+                    .append(" sub_bar.")
+                    .append(m.get().getUniqueName())
+                    .append(" AS ")
+                    .append(m.get().getUniqueName())
+                    .append(", ");
+        } else {
+            for (String column : cube.getDistinctClassicalMeasureNameList()) {
+                stringBuilder
+                        .append(" coalesce(")
+                        .append(column)
+                        .append(",0) AS ")
+                        .append(column)
+                        .append(", ");
+            }
         }
-        
-        String result = stringBuilder.substring(0, stringBuilder.length() - 2);
-        
-        Optional<MeasureSpecification> m = cube.getVirtualMeasuer();
-        
-        if (! m.isEmpty()) {
-            String virtualDimensionName = m.get().getDimensionName();
-            String stringToBeReplaced =  " coalesce(trim(convert(char," + cube
-                    .getDimensionByName(virtualDimensionName)
-                    .getLevels()
-                    .get(0)
-                    .getCodeColumnName();
-            result = result.replace(stringToBeReplaced," coalesce(trim(convert(char,sub_bar.DenseRank");
-        }
-        return result;
+        return stringBuilder.substring(0, stringBuilder.length() - 2);
+    }
+
+    @Override
+    public String getRenameSQL(String prefix, String destinationTableName) {
+        StringBuilder result = new StringBuilder("exec sp_rename '");
+        result
+                .append(destinationTableName)
+                .append("', '")
+                .append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName))
+                .append("'");
+        return result.toString();
+
+    }
+
+    @Override
+    public String getCountDistinctAggregateFunctionForVirtualMeasureSQL(String virtualColumName) {
+        StringBuilder result = new StringBuilder("STRING_AGG(CONVERT(NVARCHAR(max), ");
+        result.append(virtualColumName)
+                .append("), ',') ");
+        return result.toString();
     }
 }

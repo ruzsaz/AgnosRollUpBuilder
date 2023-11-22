@@ -35,10 +35,19 @@ public class PostgreSQLGenerator extends SQLGenerator {
         for (String s : cube.getDistinctDimensionColumnList()) {
             result.append(s).append(" VARCHAR(500), ");
         }
-        for (String s : cube.getDistinctMeasureColumnList()) {
-            result.append(s).append(" REAL, ");
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            result
+                    .append(m.get().getUniqueName())
+                    .append(" INT, ");
+        } else {
+
+            for (String s : cube.getDistinctClassicalMeasureNameList()) {
+                result.append(s).append(" REAL, ");
+            }
         }
         return result.substring(0, result.length() - 2) + ")";
+
     }
 
     @Override
@@ -64,23 +73,35 @@ public class PostgreSQLGenerator extends SQLGenerator {
             stringBuilder.append(" coalesce(").append(column).append(", 'N/A') AS ").append(column).append(", ");
         }
 
-        for (String column : cube.getDistinctMeasureColumnList()) {
-            stringBuilder.append(" coalesce(").append(column).append(",0) AS ").append(column).append(", ");
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            stringBuilder
+                    .append(" sub_bar.")
+                    .append(m.get().getUniqueName())
+                    .append(" AS ")
+                    .append(m.get().getUniqueName())
+                    .append(", ");
+        } else {
+            for (String column : cube.getDistinctClassicalMeasureNameList()) {
+                stringBuilder
+                        .append(" coalesce(")
+                        .append(column)
+                        .append(",0) AS ")
+                        .append(column)
+                        .append(", ");
+            }
         }
-String result = stringBuilder.substring(0, stringBuilder.length() - 2);
-        
-        Optional<MeasureSpecification> m = cube.getVirtualMeasuer();
-        
-        if (! m.isEmpty()) {
-            String virtualDimensionName = m.get().getDimensionName();
-            String stringToBeReplaced =  " coalesce(trim(convert(char," + cube
-                    .getDimensionByName(virtualDimensionName)
-                    .getLevels()
-                    .get(1)
-                    .getCodeColumnName();
-            result = result.replace(stringToBeReplaced," coalesce(trim(convert(char,sub_bar.DenseRank");
-        }
-        return result;
+        return stringBuilder.substring(0, stringBuilder.length() - 2);
+    }
+
+    @Override
+    public String getRenameSQL(String prefix, String destinationTableName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public String getCountDistinctAggregateFunctionForVirtualMeasureSQL(String virtualColumName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

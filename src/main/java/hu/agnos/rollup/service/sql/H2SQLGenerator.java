@@ -28,15 +28,23 @@ public class H2SQLGenerator extends SQLGenerator {
     }
 
     @Override
-    public String getCreateSQL(String prefix, CubeSpecification cubeSpec, String destinationTableName) {
+    public String getCreateSQL(String prefix, CubeSpecification cube, String destinationTableName) {
         StringBuilder result = new StringBuilder("CREATE TABLE ");
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
         result.append("( ");
-        for (String s : cubeSpec.getDistinctDimensionColumnList()) {
+        for (String s : cube.getDistinctDimensionColumnList()) {
             result.append(s).append(" VARCHAR(500), ");
         }
-        for (String s : cubeSpec.getDistinctMeasureColumnList()) {
-            result.append(s).append(" DOUBLE, ");
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            result
+                    .append(m.get().getUniqueName())
+                    .append(" INT, ");
+        } else {
+
+            for (String s : cube.getDistinctClassicalMeasureNameList()) {
+                result.append(s).append(" DOUBLE, ");
+            }
         }
         return result.substring(0, result.length() - 2) + ")";
     }
@@ -64,24 +72,38 @@ public class H2SQLGenerator extends SQLGenerator {
             stringBuilder.append(" nvl(to_char(").append(column).append("), 'N/A') ").append(column).append(", ");
         }
 
-        for (String column : cube.getDistinctMeasureColumnList()) {
-            stringBuilder.append(" nvl(").append(column).append(",0) ").append(column).append(", ");
-        }
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
 
-        String result = stringBuilder.substring(0, stringBuilder.length() - 2);
-        
-        Optional<MeasureSpecification> m = cube.getVirtualMeasuer();
-        
-        if (! m.isEmpty()) {
-            String virtualDimensionName = m.get().getDimensionName();
-            String stringToBeReplaced =  " coalesce(trim(convert(char," + cube
-                    .getDimensionByName(virtualDimensionName)
-                    .getLevels()
-                    .get(1)
-                    .getCodeColumnName();
-            result = result.replace(stringToBeReplaced," coalesce(trim(convert(char,sub_bar.DenseRank");
+        if (!m.isEmpty()) {
+            stringBuilder
+                    .append(" sub_bar.")
+                    .append(m.get().getUniqueName())
+                    .append(" AS ")
+                    .append(m.get().getUniqueName())
+                    .append(", ");
+        } else {
+            for (String column : cube.getDistinctClassicalMeasureNameList()) {
+                stringBuilder
+                        .append(" nvl(")
+                        .append(column)
+                        .append(",0) ")
+                        .append(column)
+                        .append(", ");
+            }
         }
+        String result = stringBuilder.substring(0, stringBuilder.length() - 2);
+
         return result;
+    }
+
+    @Override
+    public String getRenameSQL(String prefix, String destinationTableName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public String getCountDistinctAggregateFunctionForVirtualMeasureSQL(String virtualColumName) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
 }

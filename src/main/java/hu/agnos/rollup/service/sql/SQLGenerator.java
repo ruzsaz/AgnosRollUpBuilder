@@ -22,6 +22,10 @@ public abstract class SQLGenerator {
 
     public abstract String getDropSQL(String prefix, String destinationTableName);
 
+    public abstract String getCountDistinctAggregateFunctionForVirtualMeasureSQL(String virtualColumName);
+
+    public abstract String getRenameSQL(String prefix, String destinationTableName);
+
     public abstract String getCreateSQL(String prefix, CubeSpecification cube, String destinationTableName);
 
     public abstract String getLoadSQLSubSelectColumnList(CubeSpecification cube);
@@ -47,10 +51,17 @@ public abstract class SQLGenerator {
             result.append(column).append(", ");
         }
 
-        for (String column : cube.getDistinctMeasureColumnList()) {
-            result.append("SUM(").append(column).append("), ");
-        }
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            result
+                    .append(m.get().getUniqueName())
+                    .append(", ");
+        } else {
 
+            for (String column : cube.getDistinctClassicalMeasureNameList()) {
+                result.append("SUM(").append(column).append("), ");
+            }
+        }
         return result.substring(0, result.length() - 2);
     }
 
@@ -73,6 +84,13 @@ public abstract class SQLGenerator {
         for (String column : dimensionColumnList) {
             result.append(column).append(", ");
         }
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            result
+                    .append(m.get().getUniqueName())
+                    .append(", ");
+        }
+
         return result.substring(0, result.length() - 2);
     }
 
@@ -88,7 +106,7 @@ public abstract class SQLGenerator {
 
         }
 
-        List<String> measureColumnList = cube.getDistinctMeasureColumnList();
+        List<String> measureColumnList = cube.getDistinctClassicalMeasureNameList();
         for (String column : measureColumnList) {
             selectQuerySQLBuilder.append(column).append(", ");
             insertQuerySQLBuilder.append(column).append(", ");
@@ -163,8 +181,16 @@ public abstract class SQLGenerator {
             result.append(column).append(", ");
         }
 
-        for (String column : cube.getDistinctMeasureColumnList()) {
-            result.append(column).append(", ");
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+        if (!m.isEmpty()) {
+            result
+                    .append(m.get().getUniqueName())
+                    .append(", ");
+        } else {
+
+            for (String column : cube.getDistinctClassicalMeasureNameList()) {
+                result.append(column).append(", ");
+            }
         }
 
         return result.substring(0, result.length() - 2);
@@ -187,21 +213,17 @@ public abstract class SQLGenerator {
         result.append(getLoadSQLSubSelectColumnList(cube));
 
         result.append(" FROM ");
-        
-        String fullyQualifiedTableName = getFullyQualifiedTableNameWithPrefix(prefix, sourceTableName) ;
+
+        String fullyQualifiedTableName = getFullyQualifiedTableNameWithPrefix(prefix, sourceTableName);
         result.append(fullyQualifiedTableName);
-            
-        Optional<MeasureSpecification> m = cube.getVirtualMeasuer();
+
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
 
         if (m.isPresent()) {
-            String virtualDimensionName = m.get().getDimensionName();
-            String columName =  cube.getDimensionByName(virtualDimensionName)
-                    .getLevels()
-                    .get(0)
-                    .getCodeColumnName();
-            
+            String columName = m.get().getUniqueName();
+
             result.append(" as sub_foo,");
-            result.append("(select DISTINCT ");          
+            result.append("(select DISTINCT ");
             result.append(columName);
             result.append(", DENSE_RANK() OVER (order by ");
             result.append(columName);
@@ -211,7 +233,53 @@ public abstract class SQLGenerator {
             result.append(columName);
             result.append("=sub_foo.");
             result.append(columName);
-        } 
+        }
+        return result.toString();
+    }
+
+    private String getDimensionColumnList(CubeSpecification cube) {
+
+        List<String> dimensionColumnList = new ArrayList<>();
+        StringBuilder result = new StringBuilder();
+        for (DimensionSpecification dim : cube.getDimensions()) {
+            for (LevelSpecification level : dim.getLevels()) {
+
+                String columnName = level.getCodeColumnName();
+                if (!dimensionColumnList.contains(columnName)) {
+                    dimensionColumnList.add(columnName);
+                }
+                if (!level.getNameColumnName().equals(level.getCodeColumnName()) && !dimensionColumnList.contains(level.getNameColumnName())) {
+                    dimensionColumnList.add(level.getNameColumnName());
+                }
+            }
+        }
+
+        for (String column : dimensionColumnList) {
+            result.append(column).append(", ");
+        }
+        return result.substring(0, result.length() - 2);
+    }
+
+    public String getLoadSQLForCountDistincVirtualCube(CubeSpecification cube, String prefix, String destinationTableName) {
+        String countDistinctColumnName = "";
+        Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
+
+        if (m.isPresent()) {
+            countDistinctColumnName = m.get().getUniqueName();
+        }
+        StringBuilder result = new StringBuilder("SELECT ");
+        String notVirtualDimensionColumnList = getDimensionColumnList(cube);
+        result.append(notVirtualDimensionColumnList)
+                .append(", ")
+                .append(getCountDistinctAggregateFunctionForVirtualMeasureSQL(countDistinctColumnName))
+                .append(" as ")
+                .append(countDistinctColumnName)
+                .append(" INTO ")
+                .append(destinationTableName)
+                .append(" FROM ")
+                .append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName))
+                .append(" GROUP BY ")
+                .append(notVirtualDimensionColumnList);
         return result.toString();
     }
 

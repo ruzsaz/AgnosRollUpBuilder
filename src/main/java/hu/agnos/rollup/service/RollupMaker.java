@@ -13,6 +13,7 @@ import java.util.ResourceBundle;
 import hu.agnos.cube.specification.entity.CubeSpecification;
 import hu.agnos.cube.specification.entity.DimensionSpecification;
 import hu.agnos.cube.specification.entity.LevelSpecification;
+import hu.agnos.cube.specification.entity.MeasureSpecification;
 import hu.agnos.rollup.service.sql.H2SQLGenerator;
 import hu.agnos.rollup.service.sql.OracleSQLGenerator;
 import hu.agnos.rollup.service.sql.PostgreSQLGenerator;
@@ -20,6 +21,7 @@ import hu.agnos.rollup.service.sql.SAPSQLGenerator;
 import hu.agnos.rollup.service.sql.SQLGenerator;
 import hu.agnos.rollup.service.sql.SQLServerSQLGenerator;
 import hu.agnos.rollup.util.DBService;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,6 @@ public class RollupMaker {
 
 //    private final int PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT;
 //    private final int PARTITION_THRESHOLD_HIER_ROW_COUNT;
-
     private final String ORACLE_DRIVER;
     private final String H2_DRIVER;
     private final String SQLSERVER_DRIVER;
@@ -54,13 +55,12 @@ public class RollupMaker {
 
 ////        PARTITION_THRESHOLD_ALL_TABLE_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdAllTableRowCount"));
 ////        PARTITION_THRESHOLD_HIER_ROW_COUNT = Integer.parseInt(rb.getString("partitionThresholdHierRowCount"));
-
         ORACLE_DRIVER = rb.getString("oracleDriver");
         H2_DRIVER = rb.getString("h2Driver");
         SQLSERVER_DRIVER = rb.getString("sqlServerDriver");
         POSTGRES_DRIVER = rb.getString("postgreSqlDriver");
         SAP_DRIVER = rb.getString("sapDriver");
-        
+
         System.out.println("cube: " + cube.toString());
 
         if (cube.getSourceDBDriver().equals(ORACLE_DRIVER)) {
@@ -115,6 +115,30 @@ public class RollupMaker {
             sql = this.sqlGenerator.getDropSQL("TMP_", destinationTableName);
             DBService.slientExecuteQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
             logger.debug(sql);
+
+        }
+
+        Optional<MeasureSpecification> m = CUBE_SPEC.getCountDistinctMeasure();
+
+        if (m.isPresent()) {
+
+            logger.info("Count (Distinct()) Transformation");
+
+            String sql = this.sqlGenerator.getDropSQL("OLD_", destinationTableName);
+            DBService.slientExecuteQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
+            logger.debug(sql);
+
+            sql = this.sqlGenerator.getRenameSQL("OLD_", destinationTableName);
+            DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
+            logger.debug(sql);
+
+            sql = this.sqlGenerator.getLoadSQLForCountDistincVirtualCube(CUBE_SPEC, "OLD_", destinationTableName);
+            DBService.executeQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
+            logger.debug(sql);
+
+            sql = this.sqlGenerator.getDropSQL("OLD_", destinationTableName);
+            DBService.slientExecuteQuery(sql, dbUser, dbPassword, dbUrl, dbDriver);
+            logger.debug(sql);
         }
 
     }
@@ -123,7 +147,7 @@ public class RollupMaker {
         List<String> hierColumnList = hier.getColumnListToOLAPBuilding();
         List<String> allDimensionColumnListMinusHierarchyColumnList = CUBE_SPEC.getDistinctDimensionColumnList();
         allDimensionColumnListMinusHierarchyColumnList.removeAll(hierColumnList);
-        List<String> measureColumnList = CUBE_SPEC.getDistinctMeasureColumnList();
+        List<String> measureColumnList = CUBE_SPEC.getDistinctClassicalMeasureNameList();
 
         if (hier != null) {
             for (int i = 0; i < hier.getOlapSqlIterationCnt(); i++) {
@@ -178,7 +202,7 @@ public class RollupMaker {
             result.append(column).append(", ");
         }
 
-        for (String measureColumnName : CUBE_SPEC.getDistinctMeasureColumnList()) {
+        for (String measureColumnName : CUBE_SPEC.getDistinctClassicalMeasureNameList()) {
             result.append(measureColumnName).append(", ");
         }
         return result.substring(0, result.length() - 2) + ")\n";
