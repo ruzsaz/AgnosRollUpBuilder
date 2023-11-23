@@ -75,9 +75,7 @@ public class SAPSQLGenerator extends SQLGenerator {
         Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
         if (!m.isEmpty()) {
             stringBuilder
-                    .append(" sub_bar.")
-                    .append(m.get().getUniqueName())
-                    .append(" AS ")
+                    .append(" sub_bar.DenseRank AS ")
                     .append(m.get().getUniqueName())
                     .append(", ");
         } else {
