@@ -61,7 +61,7 @@ public class RollupMaker {
         POSTGRES_DRIVER = rb.getString("postgreSqlDriver");
         SAP_DRIVER = rb.getString("sapDriver");
 
-        System.out.println("cube: " + cube.toString());
+//        System.out.println("cube: " + cube.toString());
 
         if (cube.getSourceDBDriver().equals(ORACLE_DRIVER)) {
             this.sqlGenerator = new OracleSQLGenerator();
