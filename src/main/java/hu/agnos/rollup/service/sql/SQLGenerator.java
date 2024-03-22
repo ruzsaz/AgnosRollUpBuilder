@@ -120,6 +120,21 @@ public abstract class SQLGenerator {
         return insertQuerySQLBuilder.toString();
     }
 
+    public String getTableNameWithPrefix(String prefix, String destinationTableName) {
+        StringBuilder result = new StringBuilder();
+        if (prefix != null) {
+            if (destinationTableName.contains(".")) {
+                String[] tableNameSegments = destinationTableName.split("\\.");
+                result.append(getQuotedTableNameWithPrefix(prefix, tableNameSegments[tableNameSegments.length - 1]));
+            } else {
+                result.append(getQuotedTableNameWithPrefix(prefix, destinationTableName));
+            }
+        } else {
+            result.append(destinationTableName);
+        }
+        return result.toString();
+    }
+
     public String getFullyQualifiedTableNameWithPrefix(String prefix, String destinationTableName) {
         StringBuilder result = new StringBuilder();
         if (prefix != null) {

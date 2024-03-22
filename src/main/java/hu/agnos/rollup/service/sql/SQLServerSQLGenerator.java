@@ -98,7 +98,7 @@ public class SQLServerSQLGenerator extends SQLGenerator {
         result
                 .append(destinationTableName)
                 .append("', '")
-                .append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName))
+                .append(getTableNameWithPrefix(prefix, destinationTableName))
                 .append("'");
         return result.toString();
 

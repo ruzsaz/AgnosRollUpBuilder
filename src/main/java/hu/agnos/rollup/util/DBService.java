@@ -63,6 +63,7 @@ public class DBService {
             stmt.execute(sql);
             connection.commit();
         } catch (ClassNotFoundException | SQLException ex) {
+//            logger.debug("exception: " + ex.getMessage());
         } finally {
             if (stmt != null) {
                 try {
