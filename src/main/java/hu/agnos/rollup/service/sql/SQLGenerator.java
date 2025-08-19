@@ -218,7 +218,13 @@ public abstract class SQLGenerator {
         result.append(getLoadSQLInsertColumnList(cube));
         result.append(" ) SELECT ").append(getLoadSQLSelectColumnList(cube));
         result.append(" FROM ");
+        
+        if (this instanceof hu.agnos.rollup.service.sql.OracleSQLGenerator){
+        result.append("( ").append(getLoadSQLSubSelect(prefix, cube, sourceTableName)).append(") ");
+        }
+        else{
         result.append("( ").append(getLoadSQLSubSelect(prefix, cube, sourceTableName)).append(") as foo");
+                }
         result.append(" GROUP BY ").append(getLoadSQLGroupBYColumnList(cube));
         return result.toString();
     }

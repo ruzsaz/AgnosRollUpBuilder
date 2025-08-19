@@ -34,7 +34,7 @@ public class OracleSQLGenerator extends SQLGenerator {
         result.append(getFullyQualifiedTableNameWithPrefix(prefix, destinationTableName));
         result.append("( ");
         for (String s : cube.getDistinctDimensionColumnList()) {
-            result.append(s).append(" VARCHAR2(1000 BYTE), ");
+            result.append(s).append(" VARCHAR2(2000 BYTE), ");
         }
         Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();
         if (!m.isEmpty()) {

@@ -12,7 +12,7 @@
             <properties>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/GYOGYSZER_A10_PREVALENCIA.cube.xml --i=AGNOS.phammis.veny_a10_betegszam_fact --o=AGNOS.phammis.veny_a10_betegszam_roll</exec.appArgs>
+                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/NEAK_PRICE_MVURP_AVG.cube.xml --i=FLAT_PRICE_MVURP --o=ROLL_PRICE_MVURP_AVG</exec.appArgs>
                 <exec.vmArgs>-Xmx20G</exec.vmArgs>
                 <exec.mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</exec.mainClass>
             </properties>
@@ -30,7 +30,7 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
-                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/GYOGYSZER_A10_PREVALENCIA.cube.xml --i=AGNOS.phammis.veny_a10_betegszam_fact --o=AGNOS.phammis.veny_a10_betegszam_roll</exec.appArgs>
+                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/NEAK_PRICE_MVURP_AVG.cube.xml --i=FLAT_PRICE_MVURP --o=ROLL_PRICE_MVURP_AVG</exec.appArgs>
                 <exec.vmArgs>-Xmx20G -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</exec.mainClass>
             </properties>
@@ -47,7 +47,7 @@
             <properties>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/GYOGYSZER_A10_PREVALENCIA.cube.xml --i=AGNOS.phammis.veny_a10_betegszam_fact --o=AGNOS.phammis.veny_a10_betegszam_roll</exec.appArgs>
+                <exec.appArgs>--xml=/home/parisek/AGNOS_HOME/AgnosCubeBuilder/Meta/NEAK_PRICE_MVURP_AVG.cube.xml --i=FLAT_PRICE_MVURP --o=ROLL_PRICE_MVURP_AVG</exec.appArgs>
                 <exec.vmArgs>-Xmx20G</exec.vmArgs>
                 <exec.mainClass>hu.agnos.rollup.builder.AgnosRollUpBuilder</exec.mainClass>
             </properties>

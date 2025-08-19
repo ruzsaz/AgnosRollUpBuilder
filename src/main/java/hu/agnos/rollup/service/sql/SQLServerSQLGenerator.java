@@ -70,7 +70,7 @@ public class SQLServerSQLGenerator extends SQLGenerator {
             }
         }
         for (String column : dimensionColumnList) {
-            stringBuilder.append(" coalesce(trim(convert(char,").append(column).append(")), 'N/A') ").append(column).append(", ");
+            stringBuilder.append(" coalesce(trim(convert(varchar(500),").append(column).append(")), 'N/A') ").append(column).append(", ");
         }
 
         Optional<MeasureSpecification> m = cube.getCountDistinctMeasure();

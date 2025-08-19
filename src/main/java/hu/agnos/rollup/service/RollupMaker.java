@@ -62,7 +62,6 @@ public class RollupMaker {
         SAP_DRIVER = rb.getString("sapDriver");
 
 //        System.out.println("cube: " + cube.toString());
-
         if (cube.getSourceDBDriver().equals(ORACLE_DRIVER)) {
             this.sqlGenerator = new OracleSQLGenerator();
         } else if (cube.getSourceDBDriver().equals(H2_DRIVER)) {
@@ -141,6 +140,10 @@ public class RollupMaker {
             logger.debug(sql);
         }
 
+        String sql = this.sqlGenerator.getDropSQL("TMP_", destinationTableName);
+        logger.debug(sql);
+        DBService.slientExecuteQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
+
     }
 
     private void makeOneHierRollupInTmpTable(String dimName, DimensionSpecification hier, String destinationTableName) throws SQLException, ClassNotFoundException {
@@ -182,7 +185,9 @@ public class RollupMaker {
                 offlineCalculetedSQL = new StringBuilder(offlineCalculetedSQL.substring(0, offlineCalculetedSQL.length() - 2));
 
                 String sql = getInsertStatementFromSeletcStatement(toInsertStatement, destinationTableName) + offlineCalculetedSQL.toString();
+                logger.debug("Zsoltika");
                 logger.debug(sql);
+                logger.debug("Zsoltika2");
                 DBService.executeQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
             }
         }
@@ -223,7 +228,6 @@ public class RollupMaker {
         String sql = this.sqlGenerator.getDropSQL(null, destinationTableName);
         logger.debug(sql);
         DBService.slientExecuteQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
-
         sql = this.sqlGenerator.getCreateSQL(null, CUBE_SPEC, destinationTableName);
         logger.debug(sql);
         DBService.executeQuery(sql, CUBE_SPEC.getSourceDBUser(), CUBE_SPEC.getSourceDBPassword(), CUBE_SPEC.getSourceDBURL(), CUBE_SPEC.getSourceDBDriver());
